@@ -2,11 +2,13 @@ package main
 
 import (
 	log "code.google.com/p/log4go"
+	"flag"
 )
 
 
 
 func main() {
+	flag.Parse()
 	log.LoadConfiguration("log.xml")
 	defer log.Close()
 	

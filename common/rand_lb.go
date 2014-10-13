@@ -67,7 +67,7 @@ func NewRandLB(clients map[string]*WeightRpc, service string, retry, ping time.D
 	r := &RandLB{Clients: clients}
 	r.initWeightRand()
 	if check && len(clients) > 0 {
-		log.Info("rpc ping start")
+		log.Info("NewRandLB: rpc ping start")
 		r.ping(service, retry, ping)
 	}
 	return r, nil
@@ -84,6 +84,7 @@ func (r *RandLB) initWeightRand() {
 		s = append(s, v)
 		total += float64(v.Weight)
 	}
+	log.Debug("total: %f", total)
 	sort.Sort(byWeight(s))
 	p := []float64{}
 	ratio := 0.0
@@ -92,6 +93,7 @@ func (r *RandLB) initWeightRand() {
 		p = append(p, ratio)
 	}
 	p = append(p, float64(1))
+	log.Debug("r.p = %v", p)
 	r.p = p
 	r.s = s
 }
@@ -110,11 +112,15 @@ func (r *RandLB) updateWeightRand(retryAddr string, rpcTmp *rpc.Client) {
 func (r *RandLB) Get() *rpc.Client {
 	l := len(r.Clients)
 	if l == 0 {
+		log.Error("not valid Client")
 		return nil
 	} else if l == 1 {
+		log.Debug("only one Client")
 		return r.s[0].Client
 	}
-	return r.s[sort.Search(len(r.p), func(i int) bool { return r.p[i] >= rand.Float64() })].Client
+	client := r.s[sort.Search(len(r.p), func(i int) bool { return r.p[i] >= rand.Float64() })]
+	log.Debug("choose one client: %s", client.Addr)
+	return client.Client
 }
 
 // Stop stop the retry connect goroutine and ping goroutines.
@@ -145,6 +151,10 @@ func (r *RandLB) ping(service string, retry, ping time.Duration) {
 	retryCH := make(chan string, randLBRetryCHLength)
 	r.exitCH = make(chan int, 1)
 	for _, client := range r.Clients {
+		if client.Client == nil {
+			log.Error("client == nil %s", client.Addr)
+			continue
+		}
 		// warn: closures problem
 		go func(client *WeightRpc) {
 			log.Info("\"%s\" rpc ping goroutine start", client.Addr)

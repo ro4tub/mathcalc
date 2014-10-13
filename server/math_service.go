@@ -28,11 +28,12 @@ func (r *MathRpc) Ping(p int, ret *int) error {
 func InitRpc() error {
 	math := &MathRpc{}
 	rpc.Register(math)
-	go rpcListen("0.0.0.0:9527")
+	go rpcListen(Conf.RPCBind)
 	return nil
 }
 
 func rpcListen(remoteip string) {
+	log.Info("rpc listen: %s", remoteip)
 	l, err := net.Listen("tcp", remoteip)
 	if err != nil {
 		log.Error("net.Listen failed: %s, %v", remoteip, err)

@@ -26,26 +26,6 @@ func InitZK() (*zk.Conn, error) {
 func main() {
 	log.LoadConfiguration("log.xml")
 	defer log.Close()
-	// // TEST [[
-	// client, err := rpc.Dial("tcp", "127.0.0.1:9527")
-	// if err != nil {
-	// 	log.Error("rpc.Dial error(%v)", err)
-	// 	return
-	// }
-	// req := &common.MathCalcReq{Arg1: 100, Arg2: 214, Opt:1}
-	// ack := &common.MathCalcAck{}
-	// if err := client.Call(common.MathServiceCalc, req, ack); err != nil {
-	// 	fmt.Printf("%s rpc call error(%v)\n", common.MathServiceCalc, err)
-	// 	log.Error("%s rpc call error(%v)", common.MathServiceCalc, err)
-	// 	return
-	// }
-	// log.Info("Calc Ret=%d", ack.Ret)
-	// // ret := 0
-	// // err = client.Call("MathRPC.Ping", 0, &ret)
-	// // if err != nil {
-	// // 	log.Error("ping error: %v", err)
-	// // }
-	// // ]]
 	
 	// init zookeeper
 	zkConn, err := InitZK()
@@ -61,6 +41,10 @@ func main() {
 		select {
 		case <-time.After(time.Second * 3):
 			c := common.MessageRPC.Get()
+			if c == nil {
+				log.Error("c == nil")
+				continue
+			}
 			req := &common.MathCalcReq{Arg1: 100, Arg2: 214, Opt:1}
 			ack := &common.MathCalcAck{}
 			if err := c.Call(common.MathServiceCalc, req, ack); err != nil {

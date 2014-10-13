@@ -21,7 +21,7 @@ func InitZK() (*zk.Conn, error) {
 		return conn, err
 	}
 	nodeInfo := common.MessageNodeInfo{}
-	nodeInfo.Rpc = []string{"127.0.0.1:9527"}
+	nodeInfo.Rpc = []string{Conf.RPCBind}
 	nodeInfo.Weight = 1
 	data, err := json.Marshal(nodeInfo)
 	if err != nil {

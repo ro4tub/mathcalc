@@ -83,7 +83,7 @@ func handleMessageNodeEvent(conn *zk.Conn, retry, ping time.Duration, ch chan *M
 		for k, v := range MessageRPC.Clients {
 			tmpMessageRPCMap[k] = v
 			// reuse rpc connection
-			v.Client = nil
+			// v.Client = nil
 		}
 		// handle event
 		if ev.Event == eventNodeAdd {
